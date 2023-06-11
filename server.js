@@ -1,4 +1,5 @@
 import { ApolloServer, gql } from "apollo-server";
+import { error } from "console";
 import crypto from 'crypto'
 
 const users = [
@@ -66,7 +67,8 @@ type Todo {
 const resolvers = {
     Query: {
         users: () => users,
-        user: (parent, {id}, context) => {
+        user: (parent, { id }, {userLoggedIn}) => {
+            if(!userLoggedIn) throw new Error("You are not logged in")
             return users.find(items=>items.id == id)
         }
     },
@@ -89,8 +91,11 @@ const resolvers = {
 }
 
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+    typeDefs,
+    resolvers,
+    context: {
+        userLoggedIn: true
+    }
 });
 
 server.listen().then(({ url }) => {
