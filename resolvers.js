@@ -1,6 +1,7 @@
 import pc from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { ApolloError, AuthenticationError } from "apollo-server";
+import { AuthenticationError } from "apollo-server";
+import jwt from "jsonwebtoken"
 
 const prisma = new pc.PrismaClient();
 
@@ -10,11 +11,6 @@ const resolvers = {
     user: (parent, { id }, { userLoggedIn }) => {
       if (!userLoggedIn) throw new Error("You are not logged in");
       return users.find((items) => items.id == id);
-    },
-  },
-  User: {
-    todos: (parent) => {
-      return Todos.filter((todo) => todo.by == parent.id);
     },
   },
   Mutation: {
@@ -32,7 +28,20 @@ const resolvers = {
         },
       });
       return newUser;
-    },
+      },
+      signinUser: async (_, { userSignin }) => {
+          const user = await prisma.user.findUnique({
+            where: { email: userSignin.email },
+          });
+          if (!user)
+            throw new AuthenticationError(
+              "User doesn't exists with that email"
+            );
+          const doMatch = await bcrypt.compare(userSignin.password, user.password);
+          if (!doMatch) throw new AuthenticationError("email or password is invalid")
+          const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET)
+          return {token}
+      }
   },
 };
 
