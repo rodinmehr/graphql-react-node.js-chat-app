@@ -18,7 +18,12 @@
   },
   "homepage": "https://github.com/rodinmehr/graphql-react-node.js-chat-app#readme",
   "dependencies": {
+    "@prisma/client": "^4.15.0",
     "apollo-server": "^3.12.0",
+    "bcryptjs": "^2.4.3",
     "graphql": "^16.6.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.15.0"
   }
 }
